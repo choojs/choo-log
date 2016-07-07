@@ -17,6 +17,26 @@ const app = choo({
 })
 ```
 
+And to optimize for production using
+[envify](https://github.com/hughsk/envify):
+```js
+const choo = require('choo')
+
+// this block of code will be eliminated by any minification if
+// NODE_ENV is set to "production"
+if (process.env.NODE_ENV !== 'production') {
+  const chooLog = require('choo-log')
+  const logger = chooLog()
+  var hooks = {
+    onAction: logger.onAction(),
+    onError: logger.onError(),
+    onStateChange: logger.onStateChange(),
+  }
+}
+
+const app = hooks ? choo(hooks) : app()
+```
+
 ## API
 ### logger = chooLog()
 Create a new logger instance

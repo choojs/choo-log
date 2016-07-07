@@ -34,7 +34,7 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-const app = hooks ? choo(hooks) : app()
+const app = hooks ? choo(hooks) : choo()
 ```
 
 ## API

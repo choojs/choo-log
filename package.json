@@ -1,0 +1,29 @@
+{
+  "name": "choo-log",
+  "version": "1.0.0",
+  "description": "Development logger for choo",
+  "main": "index.js",
+  "scripts": {
+    "deps": "dependency-check . && dependency-check . --extra --no-dev",
+    "test": "standard && npm run deps && NODE_ENV=test node test",
+    "test:cov": "standard && npm run deps && NODE_ENV=test istanbul cover test.js"
+  },
+  "repository": "yoshuawuyts/choo-log",
+  "keywords": [
+    "choo",
+    "log",
+    "tcby",
+    "yo-yo",
+    "fast",
+    "browser",
+    "hah"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "dependency-check": "^2.5.2",
+    "istanbul": "^0.4.4",
+    "standard": "^7.1.2",
+    "tape": "^4.6.0"
+  }
+}

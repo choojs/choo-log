@@ -11,9 +11,9 @@ const choo = require('choo')
 
 const logger = chooLog()
 const app = choo({
-  onAction: logger.onAction(),
-  onError: logger.onError(),
-  onStateChange: logger.onStateChange(),
+  onAction: logger.onAction,
+  onError: logger.onError,
+  onStateChange: logger.onStateChange
 })
 ```
 
@@ -41,14 +41,14 @@ const app = hooks ? choo(hooks) : choo()
 ### logger = chooLog()
 Create a new logger instance
 
-### logger.onAction()
-Return a new logger for `onAction()`
+### logger.onAction
+Logger for `onAction()`
 
-### logger.onError()
-Return a new logger for `onError()`
+### logger.onError
+Logger for `onError()`
 
-### logger.onStateChange()
-Return a new logger for `onStateChange()`
+### logger.onStateChange
+Logger for `onStateChange()`
 
 ## Installation
 ```sh

@@ -4,6 +4,8 @@
 
 Development logger for choo.
 
+![screen capture](./screen.gif)
+
 ## Usage
 ```js
 const chooLog = require('choo-log')

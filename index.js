@@ -1,4 +1,5 @@
-// const padRight = require('pad-right')
+const deepDiff = require('deep-diff')
+const padRight = require('pad-right')
 const padLeft = require('pad-left')
 
 module.exports = chooLog
@@ -11,6 +12,11 @@ const colors = {
   lightGray: '#DDDDDD',
   gray: '#AAAAAA',
   default: '#293037'
+}
+
+const paddings = {
+  type: 7,
+  actionType: 7
 }
 
 // Development logger for choo
@@ -26,23 +32,32 @@ function chooLog () {
 
   // handle onAction() calls
   // (obj, obj, str, str, fn) -> null
-  function onAction (data, state, name, caller, createSend) {
+  function onAction (data, state, name, trace, createSend) {
+    const split = trace.split(':')
+    const actionType = split[0].trim()
+    const caller = split[1].trim()
+
     const line = []
-    colorify('lightGray', renderTime(startTime), line)
-    colorify('gray', renderType('Action:'), line)
-    append(`${caller} -> ${name}`, line)
+    colorify('lightGray', renderTime(startTime) + ' ', line)
+    colorify('gray', renderType('action') + ' ', line)
+    colorify('gray', renderActionType(actionType) + ' ', line)
+
+    colorify('default', "'" + caller + "'", line)
+    colorify('default', '->', line)
+    colorify('default', "'" + name + "'", line)
 
     if (console.groupCollapsed) {
       logGroup(line)
-      logInner(data)
+      logInner(name, data)
       console.groupEnd()
     } else {
       log(line)
-      logInner(data)
+      logInner(name, data)
     }
 
-    function logInner (action) {
-      console.log('action:', data)
+    function logInner (name, action) {
+      console.log('action name:', name)
+      console.log('data:', data)
     }
   }
 
@@ -50,9 +65,9 @@ function chooLog () {
   // (str, obj, fn) -> null
   function onError (err, state, createSend) {
     const line = []
-    colorify('lightGray', renderTime(startTime), line)
-    colorify('red', renderType('Error:'), line)
-    append(err.message, line)
+    colorify('lightGray', renderTime(startTime) + ' ', line)
+    colorify('red', renderType('error') + ' ', line)
+    colorify('default', err.message + ' ', line)
 
     if (console.groupCollapsed) {
       logGroup(line)
@@ -71,9 +86,13 @@ function chooLog () {
   // handle onStateChange() calls
   // (obj, obj, obj, fn) -> null
   function onStateChange (data, state, prev, createSend) {
+    const diff = deepDiff(prev, state)
+    const inlineText = (diff.length === 1) ? 'diff' : 'diffs'
+
     const line = []
-    colorify('lightGray', renderTime(startTime), line)
-    colorify('gray', renderType('State:'), line)
+    colorify('lightGray', renderTime(startTime) + ' ', line)
+    colorify('gray', renderType('state') + ' ', line)
+    colorify('default', diff.length + ' ' + inlineText, line)
 
     if (console.groupCollapsed) {
       logGroup(line)
@@ -85,8 +104,9 @@ function chooLog () {
     }
 
     function logInner (prev, state) {
-      console.log('prev', prev)
+      console.log('prev ', prev)
       console.log('state', state)
+      console.log('diff ', diff)
     }
   }
 }
@@ -106,7 +126,19 @@ function log (line) {
 // indent message types
 // str -> str
 function renderType (msg) {
-  return padLeft(msg, 7, ' ')
+  const leftPad = paddings.type
+  const rightPad = paddings.actionType + leftPad + 2
+  return (msg === 'state' || msg === 'error')
+    ? padRight(padLeft(msg, leftPad, ' '), rightPad, ' ')
+    : padLeft(msg, leftPad, ' ')
+}
+
+// indent action types
+// str -> str
+function renderActionType (msg) {
+  const padding = paddings.actionType
+  if (msg === 'subscription') msg = 'subs'
+  return padRight(msg, padding, ' ')
 }
 
 // toHtml + chalk
@@ -114,20 +146,12 @@ function renderType (msg) {
 function colorify (color, line, prev) {
   if (prev) {
     if (!prev[0]) prev[0] = ''
-    prev[0] = prev[0] += ' %c' + line + ' '
+    prev[0] = prev[0] += ' %c' + line
     prev.push('color: ' + colors[color])
     return prev
   } else {
-    return [ '%c' + line + ' ', 'color: ' + colors[color] ]
+    return [ '%c' + line, 'color: ' + colors[color] ]
   }
-}
-
-// append to line without colorizing
-// (str, [str, ...str]) -> [str, str]
-function append (line, prev) {
-  prev[0] = prev[0] += ' %c' + line + ' '
-  prev.push('color: ' + colors.default)
-  return prev
 }
 
 // render the time

@@ -1,17 +1,23 @@
-const padRight = require('pad-right')
+// const padRight = require('pad-right')
 const padLeft = require('pad-left')
 
 module.exports = chooLog
 
 // colors from http://clrs.cc/
-const GREEN = '#2ECC40'
-const RED = '#FF4136'
-const BLUE = '#7FDBFF'
-const GRAY = '#AAAAAA'
+const colors = {
+  green: '#2ECC40',
+  red: '#FF4136',
+  blue: '#7FDBFF',
+  lightGray: '#DDDDDD',
+  gray: '#AAAAAA',
+  default: '#293037'
+}
 
 // Development logger for choo
 // null -> obj
 function chooLog () {
+  const startTime = Date.now()
+
   return {
     onAction: onAction,
     onError: onError,
@@ -22,8 +28,9 @@ function chooLog () {
   // (obj, obj, str, str, fn) -> null
   function onAction (data, state, name, caller, createSend) {
     const line = []
-      .concat(colorify('gray', renderType('Action:')))
-      .concat(' ' + `${caller} -> ${name}`)
+    colorify('lightGray', renderTime(startTime), line)
+    colorify('gray', renderType('Action:'), line)
+    append(`${caller} -> ${name}`, line)
 
     if (console.groupCollapsed) {
       logGroup(line)
@@ -42,16 +49,21 @@ function chooLog () {
   // handle onError() calls
   // (str, obj, fn) -> null
   function onError (err, state, createSend) {
-    var line = []
-      .concat(colorify('red', renderType('Error:')))
-      .concat(' ' + err.message)
+    const line = []
+    colorify('lightGray', renderTime(startTime), line)
+    colorify('red', renderType('Error:'), line)
+    append(err.message, line)
 
     if (console.groupCollapsed) {
       logGroup(line)
-      console.error(err)
+      logInner(err)
       console.groupEnd()
     } else {
       log(line)
+      logInner(err)
+    }
+
+    function logInner (err) {
       console.error(err)
     }
   }
@@ -60,15 +72,19 @@ function chooLog () {
   // (obj, obj, obj, fn) -> null
   function onStateChange (data, state, prev, createSend) {
     const line = []
-      .concat(colorify('gray', renderType('State:')))
+    colorify('lightGray', renderTime(startTime), line)
+    colorify('gray', renderType('State:'), line)
 
     if (console.groupCollapsed) {
       logGroup(line)
-      console.log('state', state)
-      console.log('prev', prev)
+      logInner(prev, state)
       console.groupEnd()
     } else {
       log(line)
+      logInner(prev, state)
+    }
+
+    function logInner (prev, state) {
       console.log('prev', prev)
       console.log('state', state)
     }
@@ -94,27 +110,30 @@ function renderType (msg) {
 }
 
 // toHtml + chalk
-// (str, str) -> str
-function colorify (color, line) {
-  if (color === 'red') {
-    return [
-      '%c ' + line + ' ',
-      'color: ' + RED
-    ]
-  } else if (color === 'blue') {
-    return [
-      '%c ' + line + ' ',
-      'color: ' + BLUE
-    ]
-  } else if (color === 'green') {
-    return [
-      '%c ' + line + ' ',
-      'color: ' + GREEN
-    ]
-  } else if (color === 'gray') {
-    return [
-      '%c ' + line + ' ',
-      'color: ' + GRAY
-    ]
+// (str, str, [str, ...str]) -> [str, str]
+function colorify (color, line, prev) {
+  if (prev) {
+    if (!prev[0]) prev[0] = ''
+    prev[0] = prev[0] += ' %c' + line + ' '
+    prev.push('color: ' + colors[color])
+    return prev
+  } else {
+    return [ '%c' + line + ' ', 'color: ' + colors[color] ]
   }
+}
+
+// append to line without colorizing
+// (str, [str, ...str]) -> [str, str]
+function append (line, prev) {
+  prev[0] = prev[0] += ' %c' + line + ' '
+  prev.push('color: ' + colors.default)
+  return prev
+}
+
+// render the time
+// num -> null
+function renderTime (startTime) {
+  var offset = String(Math.round((Date.now() - startTime) / 1000) % 10000)
+  var msg = '[' + padLeft(offset, 4, '0') + ']'
+  return msg
 }

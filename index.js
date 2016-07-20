@@ -11,6 +11,7 @@ const colors = {
   blue: '#7FDBFF',
   lightGray: '#DDDDDD',
   gray: '#AAAAAA',
+  orange: '#FF851B',
   default: '#293037'
 }
 
@@ -86,13 +87,23 @@ function chooLog () {
   // handle onStateChange() calls
   // (obj, obj, obj, fn) -> null
   function onStateChange (data, state, prev, createSend) {
-    const diff = deepDiff(prev, state)
-    const inlineText = (diff.length === 1) ? 'diff' : 'diffs'
+    const diff = deepDiff(prev, state) || []
+    // warn if there is no diff
+    const hasWarn = diff.length === 0
+    const inlineText = (function (diff) {
+      if (hasWarn) {
+        return 'no diff'
+      } else if (diff.length === 1) {
+        return 'diff'
+      } else {
+        return 'diffs'
+      }
+    })(diff)
 
     const line = []
     colorify('lightGray', renderTime(startTime) + ' ', line)
-    colorify('gray', renderType('state') + ' ', line)
-    colorify('default', diff.length + ' ' + inlineText, line)
+    colorify(hasWarn ? 'orange' : 'gray', renderType('state') + ' ', line)
+    colorify('default', (hasWarn ? '' : diff.length + ' ') + inlineText, line)
 
     if (console.groupCollapsed) {
       logGroup(line)
@@ -106,7 +117,11 @@ function chooLog () {
     function logInner (prev, state) {
       console.log('prev ', prev)
       console.log('state', state)
-      console.log('diff ', diff)
+      if (hasWarn) {
+        console.warn('diff ', 'There is no difference between states')
+      } else {
+        console.log('diff ', diff)
+      }
     }
   }
 }

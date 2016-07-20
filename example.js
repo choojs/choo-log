@@ -29,7 +29,8 @@ app.model({
     increment: (data, state) => {
       assert.equal(typeof data, 'number', 'reducer:increment: data should be a number')
       return { count: state.count + data }
-    }
+    },
+    nothing: (data, state) => state
   },
   effects: {
     error: (data, state, send, done) => {
@@ -38,6 +39,9 @@ app.model({
     },
     updateState: (data, state, send, done) => {
       send('increment', state.count + 1, done)
+    },
+    doNothing: (data, state, send, done) => {
+      send('nothing', state.count, done)
     }
   }
 })
@@ -52,6 +56,7 @@ function mainView (state, prev, send) {
     <section>
       <button onclick=${() => send('error')}>Send error</button>
       <button onclick=${() => send('updateState')}>Send random</button>
+      <button onclick=${() => send('doNothing')}>Send nothing</button>
     </section>
   `
 }

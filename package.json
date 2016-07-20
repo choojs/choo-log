@@ -23,8 +23,7 @@
   "dependencies": {
     "deep-diff": "^0.3.4",
     "pad-left": "^2.1.0",
-    "pad-right": "^0.2.2",
-    "pretty-ms": "^2.1.0"
+    "pad-right": "^0.2.2"
   },
   "devDependencies": {
     "budo": "^8.3.0",

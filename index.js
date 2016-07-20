@@ -11,7 +11,7 @@ const colors = {
   blue: '#7FDBFF',
   lightGray: '#DDDDDD',
   gray: '#AAAAAA',
-  orange: '#FF851B',
+  yellow: '#FFDC00',
   default: '#293037'
 }
 
@@ -102,7 +102,7 @@ function chooLog () {
 
     const line = []
     colorify('lightGray', renderTime(startTime) + ' ', line)
-    colorify(hasWarn ? 'orange' : 'gray', renderType('state') + ' ', line)
+    colorify(hasWarn ? 'yellow' : 'gray', renderType('state') + ' ', line)
     colorify('default', (hasWarn ? '' : diff.length + ' ') + inlineText, line)
 
     if (console.groupCollapsed) {

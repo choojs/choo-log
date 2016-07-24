@@ -8,15 +8,14 @@ Development logger for choo.
 
 ## Usage
 ```js
-const chooLog = require('choo-log')
+const log = require('choo-log')
 const choo = require('choo')
 
-const logger = chooLog()
-const app = choo({
-  onAction: logger.onAction,
-  onError: logger.onError,
-  onStateChange: logger.onStateChange
-})
+const app = choo()
+app.use(log())
+
+const tree = app.start()
+document.body.appendChild(tree)
 ```
 
 And to optimize for production using
@@ -24,33 +23,22 @@ And to optimize for production using
 ```js
 const choo = require('choo')
 
+const app = choo()
+
 // this block of code will be eliminated by any minification if
 // NODE_ENV is set to "production"
 if (process.env.NODE_ENV !== 'production') {
-  const chooLog = require('choo-log')
-  const logger = chooLog()
-  var hooks = {
-    onAction: logger.onAction(),
-    onError: logger.onError(),
-    onStateChange: logger.onStateChange(),
-  }
+  const log = require('choo-log')
+  app.use(log())
 }
-
-const app = hooks ? choo(hooks) : choo()
 ```
 
 ## API
 ### logger = chooLog()
-Create a new logger instance
-
-### logger.onAction
-Logger for `onAction()`
-
-### logger.onError
-Logger for `onError()`
-
-### logger.onStateChange
-Logger for `onStateChange()`
+Create a new logger instance. Listens to:
+- `onAction()`: show the values inside of new `actions`
+- `onError()`: display errors
+- `onStateChange()`: show current state, previous state and a diff
 
 ## Installation
 ```sh

@@ -2,7 +2,7 @@
 [![npm version][2]][3] [![build status][4]][5] [![test coverage][6]][7]
 [![downloads][8]][9] [![js-standard-style][10]][11]
 
-Development logger for choo.
+Development logger for [choo][12].
 
 ![screen capture](./screen.gif)
 
@@ -60,3 +60,4 @@ $ npm install choo-log
 [9]: https://npmjs.org/package/choo-log
 [10]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [11]: https://github.com/feross/standard
+[12]: https://github.com/yoshuawuyts/choo

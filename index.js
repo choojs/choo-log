@@ -1,6 +1,7 @@
 const deepDiff = require('deep-diff')
 const padRight = require('pad-right')
 const padLeft = require('pad-left')
+const browser = require('detect-browser')
 
 module.exports = chooLog
 
@@ -47,7 +48,7 @@ function chooLog () {
     colorify('default', '->', line)
     colorify('default', "'" + name + "'", line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(name, data)
       console.groupEnd()
@@ -70,7 +71,7 @@ function chooLog () {
     colorify('red', renderType('error') + ' ', line)
     colorify('default', err.message + ' ', line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(err)
       console.groupEnd()
@@ -105,7 +106,7 @@ function chooLog () {
     colorify(hasWarn ? 'yellow' : 'gray', renderType('state') + ' ', line)
     colorify('default', (hasWarn ? '' : diff.length + ' ') + inlineText, line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(prev, state)
       console.groupEnd()
@@ -159,14 +160,24 @@ function renderActionType (msg) {
 // toHtml + chalk
 // (str, str, [str, ...str]) -> [str, str]
 function colorify (color, line, prev) {
-  if (prev) {
-    if (!prev[0]) prev[0] = ''
-    prev[0] = prev[0] += ' %c' + line
-    prev.push('color: ' + colors[color])
+  var newLine = '%c' + line
+  var newStyle = 'color: ' + colors[color] + ';'
+
+  if (!prev) {
+    prev = [ newLine, newStyle ]
     return prev
-  } else {
-    return [ '%c' + line, 'color: ' + colors[color] ]
   }
+
+  if (!prev[0]) prev[0] = ''
+  prev[0] += ' ' + newLine
+
+  if (!prev[1]) prev[1] = ''
+  if (browser.name === 'firefox') {
+    prev[1] += ' ' + newStyle
+  } else {
+    prev.push(newStyle)
+  }
+  return prev
 }
 
 // render the time
@@ -176,3 +187,8 @@ function renderTime (startTime) {
   var msg = '[' + padLeft(offset, 4, '0') + ']'
   return msg
 }
+
+function groupCollapseSupported () {
+  return console.groupCollapsed && browser.name !== 'firefox'
+}
+

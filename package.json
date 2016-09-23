@@ -22,6 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "deep-diff": "^0.3.4",
+    "detect-browser": "^1.5.0",
     "pad-left": "^2.1.0",
     "pad-right": "^0.2.2"
   },

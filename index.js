@@ -1,6 +1,7 @@
 const deepDiff = require('deep-diff')
 const padRight = require('pad-right')
 const padLeft = require('pad-left')
+const browser = require('detect-browser')
 
 module.exports = chooLog
 
@@ -159,14 +160,20 @@ function renderActionType (msg) {
 // toHtml + chalk
 // (str, str, [str, ...str]) -> [str, str]
 function colorify (color, line, prev) {
-  if (prev) {
-    if (!prev[0]) prev[0] = ''
-    prev[0] = prev[0] += ' %c' + line
-    prev.push('color: ' + colors[color])
-    return prev
+  var newLine = '%c' + line
+  var newStyle = 'color: ' + colors[color] + ';'
+
+  if (!prev) return [ newLine, newStyle ]
+
+  if (!prev[0]) prev[0] = ''
+  prev[0] += ' ' + newLine
+
+  if (browser.name === 'firefox') {
+    prev[1] = prev[1] + ' ' + newStyle
   } else {
-    return [ '%c' + line, 'color: ' + colors[color] ]
+    prev.push(newStyle)
   }
+  return prev
 }
 
 // render the time

@@ -48,7 +48,7 @@ function chooLog () {
     colorify('default', '->', line)
     colorify('default', "'" + name + "'", line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(name, data)
       console.groupEnd()
@@ -71,7 +71,7 @@ function chooLog () {
     colorify('red', renderType('error') + ' ', line)
     colorify('default', err.message + ' ', line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(err)
       console.groupEnd()
@@ -106,7 +106,7 @@ function chooLog () {
     colorify(hasWarn ? 'yellow' : 'gray', renderType('state') + ' ', line)
     colorify('default', (hasWarn ? '' : diff.length + ' ') + inlineText, line)
 
-    if (console.groupCollapsed) {
+    if (groupCollapseSupported()) {
       logGroup(line)
       logInner(prev, state)
       console.groupEnd()
@@ -163,13 +163,17 @@ function colorify (color, line, prev) {
   var newLine = '%c' + line
   var newStyle = 'color: ' + colors[color] + ';'
 
-  if (!prev) return [ newLine, newStyle ]
+  if (!prev) {
+    prev = [ newLine, newStyle ]
+    return prev
+  }
 
   if (!prev[0]) prev[0] = ''
   prev[0] += ' ' + newLine
 
+  if (!prev[1]) prev[1] = ''
   if (browser.name === 'firefox') {
-    prev[1] = prev[1] + ' ' + newStyle
+    prev[1] += ' ' + newStyle
   } else {
     prev.push(newStyle)
   }
@@ -183,3 +187,8 @@ function renderTime (startTime) {
   var msg = '[' + padLeft(offset, 4, '0') + ']'
   return msg
 }
+
+function groupCollapseSupported () {
+  return console.groupCollapsed && browser.name !== 'firefox'
+}
+

@@ -26,21 +26,21 @@ app.model({
     }
   },
   reducers: {
-    increment: (data, state) => {
+    increment: (state, data) => {
       assert.equal(typeof data, 'number', 'reducer:increment: data should be a number')
       return { count: state.count + data }
     },
-    nothing: (data, state) => state
+    nothing: (state, data) => state
   },
   effects: {
-    error: (data, state, send, done) => {
+    error: (state, data, send, done) => {
       const err = new Error('omg, this is broken')
       done(err)
     },
-    updateState: (data, state, send, done) => {
+    updateState: (state, data, send, done) => {
       send('increment', state.count + 1, done)
     },
-    doNothing: (data, state, send, done) => {
+    doNothing: (state, data, send, done) => {
       send('nothing', state.count, done)
     }
   }

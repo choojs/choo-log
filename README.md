@@ -1,4 +1,4 @@
-# choo-log [![stability][0]][1]
+# choo-log [![stability][0]][1] [![choo peer dependency][13]][14]
 [![npm version][2]][3] [![build status][4]][5] [![test coverage][6]][7]
 [![downloads][8]][9] [![js-standard-style][10]][11]
 
@@ -61,3 +61,5 @@ $ npm install choo-log
 [10]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [11]: https://github.com/feross/standard
 [12]: https://github.com/yoshuawuyts/choo
+[13]: https://img.shields.io/badge/built%20for%20choo-v4-ffc3e4.svg?style=flat-square
+[14]: https://github.com/yoshuawuyts/choo

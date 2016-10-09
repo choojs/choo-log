@@ -34,7 +34,7 @@ function chooLog () {
 
   // handle onAction() calls
   // (obj, obj, str, str, fn) -> null
-  function onAction (data, state, name, trace, createSend) {
+  function onAction (state, data, name, trace, createSend) {
     const split = trace.split(':')
     const actionType = split[0].trim()
     const caller = split[1].trim()
@@ -87,7 +87,7 @@ function chooLog () {
 
   // handle onStateChange() calls
   // (obj, obj, obj, fn) -> null
-  function onStateChange (data, state, prev, createSend) {
+  function onStateChange (state, data, prev, createSend) {
     const diff = deepDiff(prev, state) || []
     // warn if there is no diff
     const hasWarn = diff.length === 0

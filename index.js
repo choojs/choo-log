@@ -171,8 +171,8 @@ function colorify (color, line, prev) {
   if (!prev[0]) prev[0] = ''
   prev[0] += ' ' + newLine
 
-  if (!prev[1]) prev[1] = ''
   if (browser.name === 'firefox') {
+    if (!prev[1]) prev[1] = ''
     prev[1] += ' ' + newStyle
   } else {
     prev.push(newStyle)

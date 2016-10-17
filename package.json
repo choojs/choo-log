@@ -1,6 +1,6 @@
 {
   "name": "choo-log",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Development logger for choo",
   "main": "index.js",
   "scripts": {

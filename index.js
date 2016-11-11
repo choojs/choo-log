@@ -1,4 +1,3 @@
-const deepDiff = require('deep-diff')
 const padRight = require('pad-right')
 const padLeft = require('pad-left')
 const browser = require('detect-browser')
@@ -88,23 +87,9 @@ function chooLog () {
   // handle onStateChange() calls
   // (obj, obj, obj, fn) -> null
   function onStateChange (state, data, prev, createSend) {
-    const diff = deepDiff(prev, state) || []
-    // warn if there is no diff
-    const hasWarn = diff.length === 0
-    const inlineText = (function (diff) {
-      if (hasWarn) {
-        return 'no diff'
-      } else if (diff.length === 1) {
-        return 'diff'
-      } else {
-        return 'diffs'
-      }
-    })(diff)
-
     const line = []
     colorify('lightGray', renderTime(startTime) + ' ', line)
-    colorify(hasWarn ? 'yellow' : 'gray', renderType('state') + ' ', line)
-    colorify('default', (hasWarn ? '' : diff.length + ' ') + inlineText, line)
+    colorify('gray', renderType('state') + ' ', line)
 
     if (groupCollapseSupported()) {
       logGroup(line)
@@ -118,11 +103,6 @@ function chooLog () {
     function logInner (prev, state) {
       console.log('prev ', prev)
       console.log('state', state)
-      if (hasWarn) {
-        console.warn('diff ', 'There is no difference between states')
-      } else {
-        console.log('diff ', diff)
-      }
     }
   }
 }
@@ -191,4 +171,3 @@ function renderTime (startTime) {
 function groupCollapseSupported () {
   return console.groupCollapsed && browser.name !== 'firefox'
 }
-

@@ -38,7 +38,7 @@ if (process.env.NODE_ENV !== 'production') {
 Create a new logger instance. Listens to:
 - `onAction()`: show the values inside of new `actions`
 - `onError()`: display errors
-- `onStateChange()`: show current state, previous state and a diff
+- `onStateChange()`: show current state and previous state
 
 ## Installation
 ```sh

@@ -21,7 +21,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "detect-browser": "^1.5.0",
+    "detect-browser": "^1.6.2",
     "pad-left": "^2.1.0",
     "pad-right": "^0.2.2"
   },

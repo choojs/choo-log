@@ -36,14 +36,13 @@ function chooLog () {
   function onAction (state, data, name, trace, createSend) {
     const split = trace.split(':')
     const actionType = split[0].trim()
-    const caller = split[1].trim()
+    const caller = split[1] && split[1].trim()
 
     const line = []
     colorify('lightGray', renderTime(startTime) + ' ', line)
     colorify('gray', renderType('action') + ' ', line)
     colorify('gray', renderActionType(actionType) + ' ', line)
 
-    colorify('default', "'" + caller + "'", line)
     colorify('default', '->', line)
     colorify('default', "'" + name + "'", line)
 

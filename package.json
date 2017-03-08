@@ -21,9 +21,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "detect-browser": "^1.5.0",
-    "pad-left": "^2.1.0",
-    "pad-right": "^0.2.2"
+    "nanologger": "^1.0.1"
   },
   "devDependencies": {
     "budo": "^9.1.0",

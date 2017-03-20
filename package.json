@@ -24,7 +24,7 @@
     "nanologger": "^1.0.1"
   },
   "devDependencies": {
-    "budo": "^9.1.0",
+    "budo": "^9.4.5",
     "choo": "^3.0.1",
     "dependency-check": "^2.5.2",
     "istanbul": "^0.4.4",

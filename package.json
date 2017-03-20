@@ -26,7 +26,7 @@
   "devDependencies": {
     "budo": "^9.1.0",
     "choo": "^3.0.1",
-    "dependency-check": "^2.5.2",
+    "dependency-check": "^2.7.0",
     "istanbul": "^0.4.4",
     "standard": "^9.0.2",
     "tape": "^4.6.0"

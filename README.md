@@ -8,37 +8,34 @@ Development logger for [choo][12].
 
 ## Usage
 ```js
-const log = require('choo-log')
-const choo = require('choo')
+var log = require('choo-log')
+var choo = require('choo')
 
-const app = choo()
+var app = choo()
 app.use(log())
 
-const tree = app.start()
+var tree = app.start()
 document.body.appendChild(tree)
 ```
 
 And to optimize for production using
 [envify](https://github.com/hughsk/envify):
 ```js
-const choo = require('choo')
+var choo = require('choo')
 
-const app = choo()
+var app = choo()
 
 // this block of code will be eliminated by any minification if
 // NODE_ENV is set to "production"
 if (process.env.NODE_ENV !== 'production') {
-  const log = require('choo-log')
+  var log = require('choo-log')
   app.use(log())
 }
 ```
 
 ## API
-### logger = chooLog()
-Create a new logger instance. Listens to:
-- `onAction()`: show the values inside of new `actions`
-- `onError()`: display errors
-- `onStateChange()`: show current state and previous state
+### `logger = log()`
+Create a new logger instance.
 
 ## Installation
 ```sh

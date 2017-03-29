@@ -34,8 +34,14 @@ if (process.env.NODE_ENV !== 'production') {
 ```
 
 ## API
-### `logger = log()`
-Create a new logger instance.
+### `logger = log(opts)`
+Create a new logger instance. Opts can contain:
+- __timing:__ defaults to `true`. Disable calls to `window.performance` timing
+  API. Timing calls will not run in browsers that don't support it out of the
+  box.
+- __clearResourceTimings:__ defaults to `true`. Disable clearing the
+  [window.performance resourcetimingbuffer][buf] when full. Set to `false` if
+  the buffer is cleared somewhere else.
 
 ## Installation
 ```sh
@@ -60,3 +66,4 @@ $ npm install choo-log
 [12]: https://github.com/yoshuawuyts/choo
 [13]: https://img.shields.io/badge/built%20for%20choo-v4-ffc3e4.svg?style=flat-square
 [14]: https://github.com/yoshuawuyts/choo
+[buf]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/onresourcetimingbufferfull

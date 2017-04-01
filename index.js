@@ -22,17 +22,7 @@ function logger (opts) {
 
     bus.on('*', function (eventName, data) {
       if (hasPerformance && timing && eventName === 'render') {
-        window.requestAnimationFrame(function () {
-          var entries = window.performance.getEntriesByName('choo:render')
-          var index = entries.length - 1
-          var entry = entries[index]
-          var duration = entry.duration.toFixed()
-          // each frame has 10ms available for userland stuff
-          var fps = Math.min((600 / duration).toFixed(), 60)
-          var details = fps + 'fps ' + duration + 'ms'
-          if (fps === 60) log.info('render', details)
-          else log.warn('render', details)
-        })
+        window.requestAnimationFrame(renderPerformance)
       } else if (!/^log:\w{4,5}/.test(eventName)) {
         log.info(eventName, data)
       }
@@ -64,5 +54,17 @@ function logger (opts) {
     bus.on('log:fatal', function (message, data) {
       log.fatal(message, data)
     })
+
+    function renderPerformance () {
+      var entries = window.performance.getEntriesByName('choo:render')
+      var index = entries.length - 1
+      var entry = entries[index]
+      var duration = entry.duration.toFixed()
+      // each frame has 10ms available for userland stuff
+      var fps = Math.min((600 / duration).toFixed(), 60)
+      var details = fps + 'fps ' + duration + 'ms'
+      if (fps === 60) log.info('render', details)
+      else log.warn('render', details)
+    }
   }
 }

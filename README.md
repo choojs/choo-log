@@ -1,10 +1,10 @@
-# choo-log [![stability][0]][1] [![choo peer dependency][13]][14]
-[![npm version][2]][3] [![build status][4]][5] [![test coverage][6]][7]
+# choo-log [![stability][0]][1]
+[![npm version][2]][3] [![build status][4]][5]
 [![downloads][8]][9] [![js-standard-style][10]][11]
 
 Development logger for [choo][12].
 
-![screen capture](./screen.gif)
+![screen capture](./screenshot.png)
 
 ## Usage
 ```js
@@ -13,24 +13,7 @@ var choo = require('choo')
 
 var app = choo()
 app.use(log())
-
-var tree = app.start()
-document.body.appendChild(tree)
-```
-
-And to optimize for production using
-[envify](https://github.com/hughsk/envify):
-```js
-var choo = require('choo')
-
-var app = choo()
-
-// this block of code will be eliminated by any minification if
-// NODE_ENV is set to "production"
-if (process.env.NODE_ENV !== 'production') {
-  var log = require('choo-log')
-  app.use(log())
-}
+app.mount('body')
 ```
 
 ## API

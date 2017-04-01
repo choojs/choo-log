@@ -5,7 +5,9 @@ module.exports = logger
 function logger (opts) {
   opts = opts || {}
 
-  var hasPerformance = typeof window !== 'undefined' && window.performance
+  var hasPerformance = typeof window !== 'undefined' &&
+    window.performance &&
+    window.performance.getEntriesByName
   var clear = opts.clearResourceTimings === undefined ? true : opts.clearResourceTimings
   var timing = opts.timing === undefined ? true : opts.timing
 

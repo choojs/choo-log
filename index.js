@@ -27,7 +27,8 @@ function logger (opts) {
           var index = entries.length - 1
           var entry = entries[index]
           var duration = entry.duration.toFixed()
-          var fps = Math.min((1000 / duration).toFixed(), 60)
+          // each frame has 10ms available for userland stuff
+          var fps = Math.min((600 / duration).toFixed(), 60)
           var details = fps + 'fps ' + duration + 'ms'
           if (fps === 60) log.info('render', details)
           else log.warn('render', details)

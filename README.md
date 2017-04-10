@@ -36,7 +36,7 @@ emitter.emit('log:info', 'The rain in Spain stays mainly in the plain 🌧')
 These are just normal events, so you can listen to them in addition to them being logged:
 
 ```js
-emitter.on('log:debug', msg => {
+emitter.on('log:debug', function (msg) {
   // do something with debug message
 })
 ```

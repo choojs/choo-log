@@ -26,6 +26,29 @@ Create a new logger instance. Opts can contain:
   [window.performance resourcetimingbuffer][buf] when full. Set to `false` if
   the buffer is cleared somewhere else.
 
+### `emitter.emit('log:<level>', msg)`
+Send a log event. `choo-log` will pass `log:<level>` events through to [nanologger](https://github.com/yoshuawuyts/nanologger). For example:
+
+```js
+emitter.emit('log:info', 'The rain in Spain stays mainly in the plain 🌧')
+```
+
+These are just normal events, so you can listen to them in addition to them being logged:
+
+```js
+emitter.on('log:debug', msg => {
+  // do something with debug message
+})
+```
+
+### `localStorage.setItem('logLevel', <level>)`
+
+Set the [nanologger log level](https://github.com/yoshuawuyts/nanologger#level--logloglevel), e.g.:
+
+```js
+localStorage.setItem('logLevel','debug')
+```
+
 ## Installation
 ```sh
 $ npm install choo-log

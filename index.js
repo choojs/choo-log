@@ -58,6 +58,7 @@ function logger (opts) {
     function renderPerformance () {
       var entries = window.performance.getEntriesByName('choo:render')
       var index = entries.length - 1
+      if (index < 0) return log.info('render')
       var entry = entries[index]
       var duration = entry.duration.toFixed()
       // each frame has 10ms available for userland stuff

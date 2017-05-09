@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "nanologger": "^1.0.1",
-    "nanotiming": "^2.0.0"
+    "nanotiming": "^3.0.0"
   },
   "devDependencies": {
     "bankai": "^6.1.1",

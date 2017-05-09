@@ -1,15 +1,17 @@
 var nanologger = require('nanologger')
+var nanotiming = require('nanotiming')
 
 module.exports = logger
 
 function logger (opts) {
   opts = opts || {}
 
+  var timing = nanotiming('choo-log')
   var hasPerformance = typeof window !== 'undefined' &&
     window.performance &&
     window.performance.getEntriesByName
   var clear = opts.clearResourceTimings === undefined ? true : opts.clearResourceTimings
-  var timing = opts.timing === undefined ? true : opts.timing
+  var timingEnabled = opts.timing === undefined ? true : opts.timing
 
   if (hasPerformance && clear) {
     window.performance.onresourcetimingbufferfull = function () {
@@ -21,38 +23,52 @@ function logger (opts) {
     var log = nanologger('choo')
 
     bus.on('*', function (eventName, data) {
-      if (hasPerformance && timing && eventName === 'render') {
+      var uuid = timing.start('all')
+
+      if (hasPerformance && timingEnabled && eventName === 'render') {
         window.requestAnimationFrame(renderPerformance)
       } else if (!/^log:\w{4,5}/.test(eventName)) {
         log.info(eventName, data)
       }
 
       var listeners = bus.listeners(eventName)
-      if (eventName === 'pushState') return
-      if (eventName === 'DOMContentLoaded') return
-      if (!listeners.length) {
+      if (eventName !== 'pushState' &&
+        eventName !== 'DOMContentLoaded' &&
+        !listeners.length) {
         log.error('No listeners for ' + eventName)
       }
+
+      timing.end(uuid, 'all')
     })
 
     bus.on('log:debug', function (message, data) {
+      var uuid = timing.start('debug')
       log.debug(message, data)
+      timing.end(uuid, 'debug')
     })
 
     bus.on('log:info', function (message, data) {
+      var uuid = timing.start('info')
       log.info(message, data)
+      timing.end(uuid, 'info')
     })
 
     bus.on('log:warn', function (message, data) {
+      var uuid = timing.start('warn')
       log.warn(message, data)
+      timing.end(uuid, 'warn')
     })
 
     bus.on('log:error', function (message, data) {
+      var uuid = timing.start('error')
       log.error(message, data)
+      timing.end(uuid, 'error')
     })
 
     bus.on('log:fatal', function (message, data) {
+      var uuid = timing.start('fatal')
       log.fatal(message, data)
+      timing.end(uuid, 'fatal')
     })
 
     function renderPerformance () {

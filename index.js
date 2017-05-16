@@ -26,11 +26,11 @@ function logger (opts) {
       var uuid = timing.start('all')
 
       if (hasPerformance && timingEnabled && eventName === 'render') {
-        window.requestAnimationFrame(renderPerformance)
+        renderPerformance()
       } else if (eventName === 'DOMContentLoaded') {
         renderDomStart()
       } else if (!/^log:\w{4,5}/.test(eventName)) {
-        log.info(eventName, data)
+        renderEvent(eventName, data)
       }
 
       var listeners = bus.listeners(eventName)
@@ -74,7 +74,7 @@ function logger (opts) {
     })
 
     function renderPerformance () {
-      var entries = window.performance.getEntriesByName('choo:render')
+      var entries = window.performance.getEntriesByName('choo/render')
       var index = entries.length - 1
       if (index < 0) return log.info('render')
       var entry = entries[index]
@@ -84,6 +84,19 @@ function logger (opts) {
       var details = fps + 'fps ' + duration + 'ms'
       if (fps === 60) log.info('render', details)
       else log.warn('render', details)
+    }
+
+    function renderEvent (eventName, data) {
+      var name = 'choo:emit/' + eventName
+      var entries = window.performance.getEntriesByName(name)
+
+      var index = entries.length - 1
+      if (index < 0) return log.info('render')
+      var entry = entries[index]
+      var duration = entry.duration.toFixed() + 'ms'
+
+      if (data) log.info(eventName, data, duration)
+      else log.info(eventName, duration)
     }
 
     // compute and log time till interactive when DOMContentLoaded event fires

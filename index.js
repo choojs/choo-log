@@ -27,6 +27,8 @@ function logger (opts) {
 
       if (hasPerformance && timingEnabled && eventName === 'render') {
         window.requestAnimationFrame(renderPerformance)
+      } else if (eventName === 'DOMContentLoaded') {
+        renderDomStart()
       } else if (!/^log:\w{4,5}/.test(eventName)) {
         log.info(eventName, data)
       }
@@ -82,6 +84,14 @@ function logger (opts) {
       var details = fps + 'fps ' + duration + 'ms'
       if (fps === 60) log.info('render', details)
       else log.warn('render', details)
+    }
+
+    // compute and log time till interactive when DOMContentLoaded event fires
+    function renderDomStart () {
+      var timing = window.performance.timing
+      var time = timing.domInteractive - timing.navigationStart
+      var level = time < 1000 ? 'info' : 'warn'
+      log[level]('DOMContentLoaded', time + 'ms')
     }
   }
 }

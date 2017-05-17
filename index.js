@@ -29,7 +29,7 @@ function logger (opts) {
     })
 
     hook.on('use', function (count, duration) {
-      log.debug('use', 'count=' + count, duration + 'ms')
+      log.debug('use', { count: count }, duration + 'ms')
     })
 
     hook.on('unhandled', function (eventName, data) {
@@ -48,12 +48,12 @@ function logger (opts) {
 
       // each frame has 10ms available for userland stuff
       var fps = Math.min((600 / duration).toFixed(), 60)
-      var str = fps + 'fps ' + duration + 'ms'
 
       if (fps === 60) {
-        log.info('render', str)
+        log.info('render', fps + 'fps ' + duration + 'ms')
       } else {
-        log.warn('render', str, {
+        log.warn('render', fps + 'fps', {
+          total: duration + 'ms',
           create: createTiming.duration.toFixed() + 'ms',
           morph: morphTiming.duration.toFixed() + 'ms'
         })
@@ -102,7 +102,6 @@ ChooApm.prototype.start = function () {
       self._emitLoaded()
     } else if (!/^log:\w{4,5}/.test(eventName)) {
       self._emitEvent(eventName, data)
-      clearEmitterTimings(eventName)
     } else if (!self.emitter.listeners(eventName).length) {
       var listener = self.listeners['unhandled']
       if (listener) listener(eventName, data)
@@ -114,18 +113,6 @@ ChooApm.prototype.start = function () {
   this._log('warn')
   this._log('error')
   this._log('fatal')
-
-  function clearEmitterTimings (eventName) {
-    var count = 0
-    if (self.hasPerformance) ric(clear)
-
-    function clear () {
-      var regex = new RegExp('^choo:emit/' + eventName)
-      var timing = findTiming(regex)
-      if (!timing && count++ < 5) ric(clear)
-      else clearTiming(findTiming(regex))
-    }
-  }
 }
 
 ChooApm.prototype._log = function (level) {
@@ -139,16 +126,23 @@ ChooApm.prototype._log = function (level) {
       for (var i = 0, len = arguments.length; i < len; i++) args.push(arguments[i])
       listener.apply(listener, args)
     }
-
-    if (self.hasPerformance) {
-      ric(function () {
-        ric(function () {
-          var regex = new RegExp('^choo:emit/log:' + level)
-          clearTiming(findTiming(regex))
-        })
-      })
-    }
+    clearEmitterTimings(level)
   })
+
+  function clearEmitterTimings (level) {
+    var retries = 0
+    if (self.hasPerformance) ric(clear)
+
+    function clear () {
+      var regex = new RegExp('^choo:emit/log:' + level)
+      var timing = findTiming(regex)
+      if ((timing.entryType !== 'measure' || !timing) && retries++ < 5) {
+        ric(clear)
+      } else {
+        clearTiming(findTiming(regex))
+      }
+    }
+  }
 }
 
 // compute and log time till interactive when DOMContentLoaded event fires
@@ -162,7 +156,7 @@ ChooApm.prototype._emitLoaded = function () {
       if (listener) listener(time, timing)
 
       // log out .use() counts
-      var uses = findTimings(/choo\/use/)
+      var uses = findTimings(/choo\/use /)
       var duration = sumDurations(uses)
       var usesListener = self.listeners['use']
       if (usesListener) usesListener(uses.length, duration)
@@ -227,14 +221,20 @@ ChooApm.prototype._emitRender = function () {
 
 ChooApm.prototype._emitEvent = function (eventName, data) {
   var self = this
-  var count = 0
+  var retries = 0
   var listener = self.listeners['event']
-  if (!listener) return
-  ric(handle, { timeout: 1000 })
-  function handle () {
+  ric(clear)
+
+  function clear () {
     var timing = findTiming(new RegExp('choo:emit/' + eventName))
-    if (!timing && count++ < 5) return ric(handle)
-    listener(eventName, data, timing)
+    if ((timing.entryType === 'measure' && timing)) {
+      clearTiming(timing)
+      if (listener) listener(eventName, data, timing)
+    } else if (retries++ < 5) {
+      ric(clear)
+    } else {
+      if (listener) listener(eventName, data)
+    }
   }
 }
 

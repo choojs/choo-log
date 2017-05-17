@@ -42,16 +42,22 @@ function logger (opts) {
       log[level]('DOMContentLoaded', time + 'ms')
     })
 
-    hook.on('render', function (timing) {
-      if (!timing) return log.info('render')
-      var duration = timing.duration.toFixed()
+    hook.on('render', function (renderTiming, createTiming, morphTiming) {
+      if (!renderTiming) return log.info('render')
+      var duration = renderTiming.duration.toFixed()
 
       // each frame has 10ms available for userland stuff
       var fps = Math.min((600 / duration).toFixed(), 60)
-      var details = fps + 'fps ' + duration + 'ms'
+      var str = fps + 'fps ' + duration + 'ms'
 
-      if (fps === 60) log.info('render', details)
-      else log.warn('render', details)
+      if (fps === 60) {
+        log.info('render', str)
+      } else {
+        log.warn('render', str, {
+          create: createTiming.duration.toFixed() + 'ms',
+          morph: morphTiming.duration.toFixed() + 'ms'
+        })
+      }
     })
 
     hook.on('resource-timing-buffer-full', function () {
@@ -91,11 +97,9 @@ ChooApm.prototype.start = function () {
 
   this.emitter.on('*', function (eventName, data) {
     if (eventName === 'render') {
-      console.log('emitting renderrr')
       self._emitRender()
     } else if (eventName === 'DOMContentLoaded') {
       self._emitLoaded()
-      clearEmitterTimings(eventName)
     } else if (!/^log:\w{4,5}/.test(eventName)) {
       self._emitEvent(eventName, data)
       clearEmitterTimings(eventName)
@@ -111,30 +115,38 @@ ChooApm.prototype.start = function () {
   this._log('error')
   this._log('fatal')
 
-  // clears timings sent from choo:emit. Double nested idle call is to ensure
-  // it runs _after_ we're done measuring
   function clearEmitterTimings (eventName) {
-    if (self.hasPerformance) {
-      ric(function () {
-        ric(function () {
-          var regex = new RegExp('^choo:emit/' + eventName)
-          clearTiming(findTiming(regex))
-        })
-      })
+    var count = 0
+    if (self.hasPerformance) ric(clear)
+
+    function clear () {
+      var regex = new RegExp('^choo:emit/' + eventName)
+      var timing = findTiming(regex)
+      if (!timing && count++ < 5) ric(clear)
+      else clearTiming(findTiming(regex))
     }
   }
 }
 
 ChooApm.prototype._log = function (level) {
-  level = 'log:' + level
+  var key = 'log:' + level
   var self = this
 
-  this.emitter.on(level, function (message, data) {
-    var listener = self.listeners[level]
+  this.emitter.on(key, function (message, data) {
+    var listener = self.listeners[key]
     if (listener) {
       var args = []
       for (var i = 0, len = arguments.length; i < len; i++) args.push(arguments[i])
       listener.apply(listener, args)
+    }
+
+    if (self.hasPerformance) {
+      ric(function () {
+        ric(function () {
+          var regex = new RegExp('^choo:emit/log:' + level)
+          clearTiming(findTiming(regex))
+        })
+      })
     }
   })
 }
@@ -142,55 +154,88 @@ ChooApm.prototype._log = function (level) {
 // compute and log time till interactive when DOMContentLoaded event fires
 ChooApm.prototype._emitLoaded = function () {
   var self = this
-  ric(function () {
+  ric(function clear () {
     var listener = self.listeners['DOMContentLoaded']
     if (self.hasPerformance) {
       var timing = window.performance.timing
       var time = timing.domInteractive - timing.navigationStart
       if (listener) listener(time, timing)
 
-      // clear out the "start" timing
-      clearTiming(findTiming(/^choo\/start/))
-
       // log out .use() counts
       var uses = findTimings(/choo\/use/)
       var duration = sumDurations(uses)
       var usesListener = self.listeners['use']
       if (usesListener) usesListener(uses.length, duration)
-      uses.forEach(clearTiming)
+
+      // clear out the "start" timing & friends
+      var count = 0
+      ric(clear)
     } else {
       listener()
+    }
+
+    function clear () {
+      var domTiming = findTiming(/^choo:emit\/DOMContentLoaded/)
+      var morphTiming = findTiming(/^choo\/render:morph/)
+      var emitTiming = findTiming(/^choo:emit\/render /)
+
+      if ((!domTiming || !morphTiming || !emitTiming) && count++ < 5) {
+        return ric(clear)
+      }
+
+      uses.forEach(clearTiming)
+
+      clearTiming(domTiming)
+      clearTiming(morphTiming)
+      clearTiming(emitTiming)
+      clearTiming(findTiming(/^choo\/render /))
+      clearTiming(findTiming(/^choo\/route/))
     }
   })
 }
 
 ChooApm.prototype._emitRender = function () {
   var self = this
-  ric(function () {
-    var entries = window.performance.getEntriesByName('choo/render')
-    var timing = entries[entries.length - 1]
-    var listener = self.listeners['render']
-    if (listener) listener(timing)
 
-    if (self.hasPerformance) {
-      console.log('hoiiooi')
-      clearTiming(findTiming(/^choo\/render /))
-      clearTiming(findTiming(/^choo\/render:morph/))
-      clearTiming(findTiming(/^choo\/route/))
+  var listener = self.listeners['render']
+  if (!listener) return
+
+  ric(function () {
+    var count = 0
+    if (self.hasPerformance) ric(log)
+    else listener()
+
+    function log () {
+      var logTiming = findTiming(/^choo:emit\/render /)
+      var renderTiming = findTiming(/^choo\/render /)
+      var createTiming = findTiming(/^choo\/route/)
+      var morphTiming = findTiming(/^choo\/render:morph/)
+
+      if ((!logTiming || !renderTiming || !createTiming || !morphTiming) && count++ < 5) {
+        return ric(log)
+      }
+
+      listener(renderTiming, createTiming, morphTiming)
+
+      clearTiming(logTiming)
+      clearTiming(renderTiming)
+      clearTiming(createTiming)
+      clearTiming(morphTiming)
     }
   }, { timeout: 1000 })
 }
 
 ChooApm.prototype._emitEvent = function (eventName, data) {
   var self = this
-  ric(function () {
-    var name = 'choo:emit/' + eventName
-    var entries = window.performance.getEntriesByName(name)
-
-    var timing = entries[entries.length - 1]
-    var listener = self.listeners['event']
-    if (listener) listener(eventName, data, timing)
-  }, { timeout: 1000 })
+  var count = 0
+  var listener = self.listeners['event']
+  if (!listener) return
+  ric(handle, { timeout: 1000 })
+  function handle () {
+    var timing = findTiming(new RegExp('choo:emit/' + eventName))
+    if (!timing && count++ < 5) return ric(handle)
+    listener(eventName, data, timing)
+  }
 }
 
 function ric (cb, opts) {
@@ -207,8 +252,7 @@ function find (arr, filter) {
 }
 
 function clearTiming (timing) {
-  console.log('clearing timing', timing.name)
-  window.performance.clearMeasures(timing.name)
+  if (timing) window.performance.clearMeasures(timing.name)
 }
 
 function findTiming (regex) {

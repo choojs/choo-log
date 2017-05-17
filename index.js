@@ -28,6 +28,10 @@ function logger (opts) {
       }
     })
 
+    hook.on('use', function (count, duration) {
+      log.debug('use', 'count=' + count, duration + 'ms')
+    })
+
     hook.on('unhandled', function (eventName, data) {
       log.error('No listeners for ' + eventName)
     })
@@ -51,16 +55,13 @@ function logger (opts) {
     })
 
     hook.on('resource-timing-buffer-full', function () {
-      log.error("The browser's Resource Resource timing buffer is full")
+      log.error("The browser's Resource Resource timing buffer is full. Cannot store any more timing information")
     })
 
     hook.start()
   }
 }
 
-// TODO: keep a cursor for trace events so that whenever an event is
-// received the curr counter is upped, then progress the cursor when
-// requestIdleCallback fires
 function ChooApm (emitter) {
   if (!(this instanceof ChooApm)) return new ChooApm(emitter)
 
@@ -72,7 +73,6 @@ function ChooApm (emitter) {
 
   this.emitter = emitter
   this.listeners = {}
-  this.cursors = {}
 }
 
 ChooApm.prototype.on = function (name, handler) {
@@ -91,11 +91,14 @@ ChooApm.prototype.start = function () {
 
   this.emitter.on('*', function (eventName, data) {
     if (eventName === 'render') {
+      console.log('emitting renderrr')
       self._emitRender()
     } else if (eventName === 'DOMContentLoaded') {
       self._emitLoaded()
+      clearEmitterTimings(eventName)
     } else if (!/^log:\w{4,5}/.test(eventName)) {
       self._emitEvent(eventName, data)
+      clearEmitterTimings(eventName)
     } else if (!self.emitter.listeners(eventName).length) {
       var listener = self.listeners['unhandled']
       if (listener) listener(eventName, data)
@@ -107,6 +110,19 @@ ChooApm.prototype.start = function () {
   this._log('warn')
   this._log('error')
   this._log('fatal')
+
+  // clears timings sent from choo:emit. Double nested idle call is to ensure
+  // it runs _after_ we're done measuring
+  function clearEmitterTimings (eventName) {
+    if (self.hasPerformance) {
+      ric(function () {
+        ric(function () {
+          var regex = new RegExp('^choo:emit/' + eventName)
+          clearTiming(findTiming(regex))
+        })
+      })
+    }
+  }
 }
 
 ChooApm.prototype._log = function (level) {
@@ -125,10 +141,27 @@ ChooApm.prototype._log = function (level) {
 
 // compute and log time till interactive when DOMContentLoaded event fires
 ChooApm.prototype._emitLoaded = function () {
-  var timing = window.performance.timing
-  var time = timing.domInteractive - timing.navigationStart
-  var listener = this.listeners['DOMContentLoaded']
-  if (listener) listener(time)
+  var self = this
+  ric(function () {
+    var listener = self.listeners['DOMContentLoaded']
+    if (self.hasPerformance) {
+      var timing = window.performance.timing
+      var time = timing.domInteractive - timing.navigationStart
+      if (listener) listener(time, timing)
+
+      // clear out the "start" timing
+      clearTiming(findTiming(/^choo\/start/))
+
+      // log out .use() counts
+      var uses = findTimings(/choo\/use/)
+      var duration = sumDurations(uses)
+      var usesListener = self.listeners['use']
+      if (usesListener) usesListener(uses.length, duration)
+      uses.forEach(clearTiming)
+    } else {
+      listener()
+    }
+  })
 }
 
 ChooApm.prototype._emitRender = function () {
@@ -138,6 +171,13 @@ ChooApm.prototype._emitRender = function () {
     var timing = entries[entries.length - 1]
     var listener = self.listeners['render']
     if (listener) listener(timing)
+
+    if (self.hasPerformance) {
+      console.log('hoiiooi')
+      clearTiming(findTiming(/^choo\/render /))
+      clearTiming(findTiming(/^choo\/render:morph/))
+      clearTiming(findTiming(/^choo\/route/))
+    }
   }, { timeout: 1000 })
 }
 
@@ -156,4 +196,38 @@ ChooApm.prototype._emitEvent = function (eventName, data) {
 function ric (cb, opts) {
   if (this.hasIdleCallback) window.requestIdleCallback(cb, opts)
   else setTimeout(cb, 0)
+}
+
+function find (arr, filter) {
+  for (var i = 0, len = arr.length; i < len; i++) {
+    var el = arr[i]
+    var ok = filter(el)
+    if (ok) return el
+  }
+}
+
+function clearTiming (timing) {
+  console.log('clearing timing', timing.name)
+  window.performance.clearMeasures(timing.name)
+}
+
+function findTiming (regex) {
+  var timings = window.performance.getEntries()
+  var timing = find(timings, function (timing) {
+    return regex.test(timing.name)
+  })
+  return timing
+}
+
+function findTimings (regex) {
+  var timings = window.performance.getEntries()
+  return timings.filter(function (timing) {
+    return regex.test(timing.name)
+  })
+}
+
+function sumDurations (timings) {
+  return timings.reduce(function (sum, timing) {
+    return sum + timing.duration
+  }, 0).toFixed()
 }

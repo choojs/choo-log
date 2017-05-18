@@ -42,8 +42,8 @@ function logger (opts) {
 
     hook.on('DOMContentLoaded', function (time) {
       if (!time) return log.info('DOMContentLoaded')
-      var level = time < 1000 ? 'info' : 'warn'
-      log[level]('DOMContentLoaded', time + 'ms')
+      var level = time.interactive < 1000 ? 'info' : 'warn'
+      log[level]('DOMContentLoaded', time.interactive + 'ms to interactive')
     })
 
     hook.on('render', function (renderTiming, createTiming, morphTiming) {

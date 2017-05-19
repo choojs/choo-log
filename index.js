@@ -54,10 +54,9 @@ function logger (opts) {
       var fps = Math.min((600 / duration).toFixed(), 60)
 
       if (fps === 60) {
-        log.info('render', fps + 'fps ' + duration + 'ms')
+        log.info('render', fps + 'fps', duration + 'ms')
       } else {
-        log.warn('render', fps + 'fps', {
-          total: duration + 'ms',
+        log.warn('render', fps + 'fps', duration + 'ms', {
           create: createTiming.duration.toFixed() + 'ms',
           morph: morphTiming.duration.toFixed() + 'ms'
         })

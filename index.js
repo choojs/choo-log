@@ -1,7 +1,7 @@
 var nanologger = require('nanologger')
 var assert = require('assert')
 
-var ChooApm = require('./lib/apm')
+var ChooInstrument = require('./lib/instrument')
 
 module.exports = logger
 
@@ -11,7 +11,7 @@ function logger (opts) {
   assert.equal(typeof opts, 'object', 'choo-log: opts should be type object')
 
   return function (state, emitter) {
-    var hook = ChooApm(emitter)
+    var hook = ChooInstrument(emitter)
     var log = nanologger('choo')
 
     hook.on('log:debug', log.debug.bind(log))

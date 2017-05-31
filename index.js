@@ -40,15 +40,15 @@ function logger (opts) {
       log.error('No listeners for ' + eventName)
     })
 
-    hook.on('DOMContentLoaded', function (time) {
-      if (!time) return log.info('DOMContentLoaded')
-      var level = time.interactive < 1000 ? 'info' : 'warn'
-      log[level]('DOMContentLoaded', time.interactive + 'ms to interactive')
+    hook.on('DOMContentLoaded', function (timing) {
+      if (!timing) return log.info('DOMContentLoaded')
+      var level = timing.interactive < 1000 ? 'info' : 'warn'
+      log[level]('DOMContentLoaded', timing.interactive + 'ms to interactive')
     })
 
-    hook.on('render', function (renderTiming, createTiming, morphTiming) {
-      if (!renderTiming) return log.info('render')
-      var duration = renderTiming.duration.toFixed()
+    hook.on('render', function (timings) {
+      if (!timings) return log.info('render')
+      var duration = timings.render.duration.toFixed()
 
       // each frame has 10ms available for userland stuff
       var fps = Math.min((600 / duration).toFixed(), 60)
@@ -57,8 +57,8 @@ function logger (opts) {
         log.info('render', fps + 'fps', duration + 'ms')
       } else {
         log.warn('render', fps + 'fps', duration + 'ms', {
-          create: createTiming.duration.toFixed() + 'ms',
-          morph: morphTiming.duration.toFixed() + 'ms'
+          render: timings.render.duration.toFixed() + 'ms',
+          morph: timings.morph.duration.toFixed() + 'ms'
         })
       }
     })

@@ -21,7 +21,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "nanologger": "^1.0.1"
+    "nanologger": "^1.0.1",
+    "on-idle": "^3.0.2",
+    "on-performance": "^1.0.0"
   },
   "devDependencies": {
     "bankai": "^6.1.1",

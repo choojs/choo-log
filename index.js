@@ -24,10 +24,10 @@ function logger (opts) {
       if (timing) {
         var duration = timing.duration.toFixed()
         var level = duration < 50 ? 'info' : 'warn'
-        if (data) log[level](eventName, data, duration + 'ms')
+        if (data !== undefined) log[level](eventName, data, duration + 'ms')
         else log[level](eventName, duration + 'ms')
       } else {
-        if (data) log.info(eventName, data)
+        if (data !== undefined) log.info(eventName, data)
         else log.info(eventName)
       }
     })

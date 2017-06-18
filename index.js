@@ -7,6 +7,7 @@ module.exports = logger
 
 function logger (opts) {
   opts = opts || {}
+  var initialRender = true
 
   assert.equal(typeof opts, 'object', 'choo-log: opts should be type object')
 
@@ -49,14 +50,20 @@ function logger (opts) {
     hook.on('render', function (timings) {
       if (!timings) return log.info('render')
       var duration = timings.render.duration.toFixed()
+      var msg = 'render'
+
+      if (initialRender) {
+        initialRender = false
+        msg = 'initial ' + msg
+      }
 
       // each frame has 10ms available for userland stuff
       var fps = Math.min((600 / duration).toFixed(), 60)
 
       if (fps === 60) {
-        log.info('render', fps + 'fps', duration + 'ms')
+        log.info(msg, fps + 'fps', duration + 'ms')
       } else {
-        log.warn('render', fps + 'fps', duration + 'ms', {
+        log.warn(msg, fps + 'fps', duration + 'ms', {
           render: timings.render.duration.toFixed() + 'ms',
           morph: timings.morph.duration.toFixed() + 'ms'
         })

@@ -1,71 +1,79 @@
 var nanologger = require('nanologger')
+var assert = require('assert')
+
+var ChooInstrument = require('./lib/instrument')
 
 module.exports = logger
 
 function logger (opts) {
   opts = opts || {}
+  var initialRender = true
 
-  var hasPerformance = typeof window !== 'undefined' &&
-    window.performance &&
-    window.performance.getEntriesByName
-  var clear = opts.clearResourceTimings === undefined ? true : opts.clearResourceTimings
-  var timing = opts.timing === undefined ? true : opts.timing
+  assert.equal(typeof opts, 'object', 'choo-log: opts should be type object')
 
-  if (hasPerformance && clear) {
-    window.performance.onresourcetimingbufferfull = function () {
-      window.performance.clearResourceTimings()
-    }
-  }
-
-  return function (state, bus) {
+  return function (state, emitter) {
+    var hook = ChooInstrument(emitter)
     var log = nanologger('choo')
 
-    bus.on('*', function (eventName, data) {
-      if (hasPerformance && timing && eventName === 'render') {
-        window.requestAnimationFrame(renderPerformance)
-      } else if (!/^log:\w{4,5}/.test(eventName)) {
-        log.info(eventName, data)
+    hook.on('log:debug', log.debug.bind(log))
+    hook.on('log:info', log.info.bind(log))
+    hook.on('log:warn', log.warn.bind(log))
+    hook.on('log:error', log.error.bind(log))
+    hook.on('log:fatal', log.fatal.bind(log))
+
+    hook.on('event', function (eventName, data, timing) {
+      if (timing) {
+        var duration = timing.duration.toFixed()
+        var level = duration < 50 ? 'info' : 'warn'
+        if (data !== undefined) log[level](eventName, data, duration + 'ms')
+        else log[level](eventName, duration + 'ms')
+      } else {
+        if (data !== undefined) log.info(eventName, data)
+        else log.info(eventName)
+      }
+    })
+
+    hook.on('use', function (count, duration) {
+      log.debug('use', { count: count }, duration + 'ms')
+    })
+
+    hook.on('unhandled', function (eventName, data) {
+      log.error('No listeners for ' + eventName)
+    })
+
+    hook.on('DOMContentLoaded', function (timing) {
+      if (!timing) return log.info('DOMContentLoaded')
+      var level = timing.interactive < 1000 ? 'info' : 'warn'
+      log[level]('DOMContentLoaded', timing.interactive + 'ms to interactive')
+    })
+
+    hook.on('render', function (timings) {
+      if (!timings) return log.info('render')
+      var duration = timings.render.duration.toFixed()
+      var msg = 'render'
+
+      if (initialRender) {
+        initialRender = false
+        msg = 'initial ' + msg
       }
 
-      var listeners = bus.listeners(eventName)
-      if (eventName === 'pushState') return
-      if (eventName === 'DOMContentLoaded') return
-      if (!listeners.length) {
-        log.error('No listeners for ' + eventName)
-      }
-    })
-
-    bus.on('log:debug', function (message, data) {
-      log.debug(message, data)
-    })
-
-    bus.on('log:info', function (message, data) {
-      log.info(message, data)
-    })
-
-    bus.on('log:warn', function (message, data) {
-      log.warn(message, data)
-    })
-
-    bus.on('log:error', function (message, data) {
-      log.error(message, data)
-    })
-
-    bus.on('log:fatal', function (message, data) {
-      log.fatal(message, data)
-    })
-
-    function renderPerformance () {
-      var entries = window.performance.getEntriesByName('choo:render')
-      var index = entries.length - 1
-      if (index < 0) return log.info('render')
-      var entry = entries[index]
-      var duration = entry.duration.toFixed()
       // each frame has 10ms available for userland stuff
       var fps = Math.min((600 / duration).toFixed(), 60)
-      var details = fps + 'fps ' + duration + 'ms'
-      if (fps === 60) log.info('render', details)
-      else log.warn('render', details)
-    }
+
+      if (fps === 60) {
+        log.info(msg, fps + 'fps', duration + 'ms')
+      } else {
+        log.warn(msg, fps + 'fps', duration + 'ms', {
+          render: timings.render.duration.toFixed() + 'ms',
+          morph: timings.morph.duration.toFixed() + 'ms'
+        })
+      }
+    })
+
+    hook.on('resource-timing-buffer-full', function () {
+      log.error("The browser's Resource Resource timing buffer is full. Cannot store any more timing information")
+    })
+
+    hook.start()
   }
 }

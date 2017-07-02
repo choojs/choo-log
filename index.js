@@ -7,13 +7,14 @@ module.exports = logger
 
 function logger (opts) {
   opts = opts || {}
+  var colors = opts.colors || {}
   var initialRender = true
 
   assert.equal(typeof opts, 'object', 'choo-log: opts should be type object')
 
   return function (state, emitter) {
     var hook = ChooInstrument(emitter)
-    var log = nanologger('choo')
+    var log = nanologger('choo', { colors: colors })
 
     hook.on('log:debug', log.debug.bind(log))
     hook.on('log:info', log.info.bind(log))

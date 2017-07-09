@@ -21,6 +21,10 @@ function logger (opts) {
     hook.on('log:error', log.error.bind(log))
     hook.on('log:fatal', log.fatal.bind(log))
 
+    hook.on('service-worker', function (data) {
+      log.info('Service worker installed')
+    })
+
     hook.on('event', function (eventName, data, timing) {
       if (timing) {
         var duration = timing.duration.toFixed()

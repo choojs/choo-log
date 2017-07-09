@@ -58,7 +58,7 @@ function logger (opts) {
 
       if (initialRender) {
         initialRender = false
-        msg = 'initial ' + msg
+        msg = 'Initial ' + msg
       }
 
       // each frame has 10ms available for userland stuff

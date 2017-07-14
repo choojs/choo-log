@@ -25,6 +25,7 @@ Create a new logger instance. Opts can contain:
 - __clearResourceTimings:__ defaults to `true`. Disable clearing the
   [window.performance resourcetimingbuffer][buf] when full. Set to `false` if
   the buffer is cleared somewhere else.
+- __colors:__ defaults to the default theme of [nanologger][15].
 
 ### `emitter.emit('log:<level>', msg)`
 Send a log event. `choo-log` will pass `log:<level>` events through to [nanologger](https://github.com/yoshuawuyts/nanologger). For example:
@@ -72,4 +73,5 @@ $ npm install choo-log
 [12]: https://github.com/yoshuawuyts/choo
 [13]: https://img.shields.io/badge/built%20for%20choo-v4-ffc3e4.svg?style=flat-square
 [14]: https://github.com/yoshuawuyts/choo
+[15]: https://github.com/yoshuawuyts/nanologger/blob/master/index.js#L17
 [buf]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/onresourcetimingbufferfull

@@ -16,6 +16,7 @@ function logger (opts) {
     var hook = ChooInstrument(emitter)
     var log = nanologger('choo', { colors: colors })
 
+    hook.on('log:trace', log.trace.bind(log))
     hook.on('log:debug', log.debug.bind(log))
     hook.on('log:info', log.info.bind(log))
     hook.on('log:warn', log.warn.bind(log))

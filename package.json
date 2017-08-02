@@ -20,7 +20,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "nanologger": "^1.2.0",
+    "nanologger": "^1.3.0",
     "on-idle": "^3.0.2",
     "on-performance": "^1.0.0"
   },

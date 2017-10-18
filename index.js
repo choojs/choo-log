@@ -4,6 +4,7 @@ var assert = require('assert')
 var ChooInstrument = require('./lib/instrument')
 
 module.exports = logger
+module.exports["default"] = logger
 
 function logger (opts) {
   opts = opts || {}

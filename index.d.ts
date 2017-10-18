@@ -1,3 +1,9 @@
 export default logger;
 
-declare function logger(): (state: any, emitter: any) => void;
+declare namespace Choo {
+  export interface LogOpts {
+    colors?: object
+  }
+}
+
+declare function logger(opts?: Choo.LogOpts): (state: any, emitter: any) => void;

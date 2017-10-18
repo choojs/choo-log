@@ -28,7 +28,7 @@ Create a new logger instance. Opts can contain:
 - __colors:__ defaults to the default theme of [nanologger][15].
 
 ### `emitter.emit('log:<level>', msg)`
-Send a log event. `choo-log` will pass `log:<level>` events through to [nanologger](https://github.com/yoshuawuyts/nanologger). For example:
+Send a log event. `choo-log` will pass `log:<level>` events through to [nanologger](https://github.com/choojs/nanologger). For example:
 
 ```js
 emitter.emit('log:info', 'The rain in Spain stays mainly in the plain 🌧')
@@ -44,7 +44,7 @@ emitter.on('log:debug', function (msg) {
 
 ### `localStorage.setItem('logLevel', <level>)`
 
-Set the [nanologger log level](https://github.com/yoshuawuyts/nanologger#level--logloglevel), e.g.:
+Set the [nanologger log level](https://github.com/choojs/nanologger#level--logloglevel), e.g.:
 
 ```js
 localStorage.setItem('logLevel','debug')
@@ -62,16 +62,16 @@ $ npm install choo-log
 [1]: https://nodejs.org/api/documentation.html#documentation_stability_index
 [2]: https://img.shields.io/npm/v/choo-log.svg?style=flat-square
 [3]: https://npmjs.org/package/choo-log
-[4]: https://img.shields.io/travis/yoshuawuyts/choo-log/master.svg?style=flat-square
-[5]: https://travis-ci.org/yoshuawuyts/choo-log
-[6]: https://img.shields.io/codecov/c/github/yoshuawuyts/choo-log/master.svg?style=flat-square
-[7]: https://codecov.io/github/yoshuawuyts/choo-log
+[4]: https://img.shields.io/travis/choojs/choo-log/master.svg?style=flat-square
+[5]: https://travis-ci.org/choojs/choo-log
+[6]: https://img.shields.io/codecov/c/github/choojs/choo-log/master.svg?style=flat-square
+[7]: https://codecov.io/github/choojs/choo-log
 [8]: http://img.shields.io/npm/dm/choo-log.svg?style=flat-square
 [9]: https://npmjs.org/package/choo-log
 [10]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [11]: https://github.com/feross/standard
-[12]: https://github.com/yoshuawuyts/choo
+[12]: https://github.com/choojs/choo
 [13]: https://img.shields.io/badge/built%20for%20choo-v4-ffc3e4.svg?style=flat-square
-[14]: https://github.com/yoshuawuyts/choo
-[15]: https://github.com/yoshuawuyts/nanologger/blob/master/index.js#L17
+[14]: https://github.com/choojs/choo
+[15]: https://github.com/choojs/nanologger/blob/master/index.js#L17
 [buf]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/onresourcetimingbufferfull

@@ -2,6 +2,8 @@
 [![npm version][2]][3] [![build status][4]][5]
 [![downloads][8]][9] [![js-standard-style][10]][11]
 
+# This project has been deprecated. All functionality has been merged into [choo-devtools](https://github.com/choojs/choo-devtools/). Thanks for passing by!
+
 Development logger for [choo][12].
 
 ![screen capture](./screenshot.png)
